@@ -64,6 +64,7 @@ public class Runner : MonoBehaviour
 				renderer.enabled = true;
 				rigidbody.isKinematic = false;
 				enabled = true;
+				Debug.Log ("GameStart for Runner is called!");
 		}
 	
 		private void GameOver ()
