@@ -1,5 +1,6 @@
 ﻿using UnityEngine;
 using System.Collections;
+using System.Collections.Generic;
 
 public class Runner : MonoBehaviour
 {
@@ -14,9 +15,12 @@ public class Runner : MonoBehaviour
 	
 		public float gameOverY;
 		private Vector3 startPosition;
+		
+		private List<GameObject> collidingGameObjects;
 	
 		void Start ()
 		{
+				collidingGameObjects = new List<GameObject> ();
 				GameEventManager.GameStart += GameStart;
 				GameEventManager.GameOver += GameOver;
 				startPosition = transform.localPosition;
@@ -32,12 +36,17 @@ public class Runner : MonoBehaviour
 				
 				deciceIfWeShouldMove ();
 				
-				if (this.touchingPlatform () && Input.GetButtonDown ("Jump")) {
-						rigidbody.AddForce (jumpVelocity, ForceMode.VelocityChange);
-				}
+				decideIfWeShouldJump ();
 				distanceTraveled = transform.localPosition.x;
 				//transform.Translate (5f * Time.deltaTime, 0f, 0f);	
 				distanceTraveled = transform.localPosition.x;
+		}
+		
+		void decideIfWeShouldJump ()
+		{
+				if (this.touchingPlatform () && Input.GetButtonDown ("Jump")) {
+						rigidbody.AddForce (jumpVelocity, ForceMode.VelocityChange);
+				}
 		}
 		
 		void deciceIfWeShouldMove ()
@@ -49,21 +58,62 @@ public class Runner : MonoBehaviour
 						Vector3 accelerationVector = new Vector3 (directionUserWantsToMove * acceleration, 0, 0);
 						rigidbody.AddForce (accelerationVector, ForceMode.VelocityChange);
 				}
+				
+				bool weAreTouchingWall = isTouchingWall ();
+				float userUpInput = Input.GetAxis ("Vertical");
+		
+				if (weAreTouchingWall && userUpInput > 0) {
+						bool deacceleratingFall = rigidbody.velocity.y < 0 && 0 < userUpInput;
+						if (Mathf.Abs (rigidbody.velocity.y) < maxSpeed || deacceleratingFall) {
+								Vector3 jumpVector = new Vector3 (0, userUpInput * acceleration, 0);
+								rigidbody.AddForce (jumpVector, ForceMode.VelocityChange);
+						}
+				}
 		}
 	
 		void OnCollisionEnter (Collision collision)
 		{
-				++platformContacts;
+		
+				Vector3 collisionpoint = collision.contacts [0].point;
+				Vector3 runnerPoint = transform.position;
+				Vector3 direction = runnerPoint - collisionpoint;
+				bool isFloor = Mathf.Abs (direction.y) >= 0.9;
+				Debug.Log ("direction.y: " + direction.y);
+				Debug.Log ("OCE: direction for aCollision is:: " + direction + " WHICH IS FLOOR??? " + isFloor);
+		
+		
+				collidingGameObjects.Add (collision.gameObject);
+				Debug.Log ("collision enter: " + collision);
 		}
 	
 		void OnCollisionExit (Collision collision)
 		{
-				--platformContacts;
+				collidingGameObjects.Remove (collision.gameObject);
+				Debug.Log ("collision exit: " + collision);
 		}
 		
 		private bool touchingPlatform ()
 		{
-				return platformContacts > 0;
+				Debug.Log ("coll count: " + collidingGameObjects.Count);
+				return collidingGameObjects.Count > 0;
+		}
+	
+		private bool isTouchingWall ()
+		{
+				//loop through all collisions
+				//check if any of the objects have a 90degree diff towards player
+				bool isSomeWall = false;
+				foreach (GameObject collidingObject in collidingGameObjects) {
+						Vector3 collisionpoint = collidingObject.transform.position;
+						Vector3 runnerPoint = transform.position;
+						Vector3 direction = runnerPoint - collisionpoint;
+						bool isFloor = Mathf.Abs (direction.y) >= 0.9;
+						if (!isFloor) {
+								isSomeWall = true;
+								break;
+						}
+				}
+				return isSomeWall;
 		}
 		
 		private void GameStart ()
