@@ -18,9 +18,11 @@ public class PlatformManager : MonoBehaviour
 		public Vector3 minSize, maxSize;
 		
 		
-		public float runningGapBetweenBlocks;
+		public float chanceForRunningGap; //add the chance for a gap occuring, i.e. 30% for gaps occcuring less than half the times
+		public float minRunningGapDistance;
+		public float maxRunningGapDistance;
+		public float maxHeightDifferenceBetweenBlocks;
 		
-		public float maxMoveBetweenBlocks;
 	
 		public Material[] materials;
 		public PhysicMaterial[] physicMaterials;
@@ -67,12 +69,12 @@ public class PlatformManager : MonoBehaviour
 		{
 				
 				float randomisedY = Random.Range (minSize.y, maxSize.y);
-				if (randomisedY > oldScale.y + maxMoveBetweenBlocks) {
-						randomisedY = oldScale.y + maxMoveBetweenBlocks;
+				if (randomisedY > oldScale.y + maxHeightDifferenceBetweenBlocks) {
+						randomisedY = oldScale.y + maxHeightDifferenceBetweenBlocks;
 				}
 		
-				if (randomisedY < oldScale.y - maxMoveBetweenBlocks) {
-						randomisedY = oldScale.y - maxMoveBetweenBlocks;
+				if (randomisedY < oldScale.y - maxHeightDifferenceBetweenBlocks) {
+						randomisedY = oldScale.y - maxHeightDifferenceBetweenBlocks;
 				}		
 				
 				randomisedY = Mathf.Min (randomisedY, maxSize.y);
@@ -99,9 +101,18 @@ public class PlatformManager : MonoBehaviour
 		
 				objectQueue.Enqueue (objectToHandle);
 				
-				nextPosition.x += scale.x + runningGapBetweenBlocks;
+				float gapDistance = calculateNextGap ();
+				nextPosition.x += scale.x + gapDistance;
 				//Debug.Log ("HaveMoved: " + (oldPosition.y - nextPosition.y));
 				oldScale = objectToHandle.localScale;
+		}
+		
+		private float calculateNextGap ()
+		{
+				
+				bool shouldHaveAGap = chanceForRunningGap > Random.Range (0, 1.0f);
+				float gap = shouldHaveAGap ? Random.Range (minRunningGapDistance, maxRunningGapDistance) : 0;
+				return gap;
 		}
 	
 }

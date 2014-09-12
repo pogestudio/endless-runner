@@ -15,8 +15,6 @@ public class Runner : MonoBehaviour
 		public float gameOverY;
 		private Vector3 startPosition;
 	
-	
-	
 		void Start ()
 		{
 				GameEventManager.GameStart += GameStart;
