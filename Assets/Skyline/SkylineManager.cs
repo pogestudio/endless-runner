@@ -61,7 +61,7 @@ public class SkylineManager : MonoBehaviour
 		
 				Vector3 position = nextPosition;
 				position.x += scale.x * 0.5f;
-				position.y += scale.y * 0.5f;
+				position.y = 0;
 		
 				Transform objectToHandle = objectQueue.Dequeue ();
 				objectToHandle.localScale = scale;

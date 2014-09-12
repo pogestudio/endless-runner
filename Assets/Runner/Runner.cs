@@ -9,11 +9,13 @@ public class Runner : MonoBehaviour
 	
 		public float gameOverY;
 		private Vector3 startPosition;
+		public float size;
 		
 		private List<GameObject> collidingGameObjects;
 	
 		void Start ()
 		{
+				transform.localScale = new Vector3 (size, size, size);
 				collidingGameObjects = new List<GameObject> ();
 				GameEventManager.GameStart += GameStart;
 				GameEventManager.GameOver += GameOver;
