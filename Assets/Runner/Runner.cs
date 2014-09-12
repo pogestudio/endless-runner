@@ -6,7 +6,7 @@ public class Runner : MonoBehaviour
 {
 
 		public static float distanceTraveled;
-		public Vector3 jumpVelocity;
+		public float jumpVelocity;
 	
 		public float acceleration;
 		public float maxSpeed;
@@ -44,13 +44,14 @@ public class Runner : MonoBehaviour
 		
 		void decideIfWeShouldJump ()
 		{
-				if (this.touchingPlatform () && Input.GetButtonDown ("Jump")) {
-						rigidbody.AddForce (jumpVelocity, ForceMode.VelocityChange);
+				if (Input.GetButtonDown ("Jump") && this.touchingPlatform ()) {
+						rigidbody.velocity = new Vector3 (rigidbody.velocity.x, jumpVelocity, 0);
 				}
 		}
 		
 		void deciceIfWeShouldMove ()
 		{
+				//HORIZONTAL
 				float directionUserWantsToMove = Input.GetAxis ("Horizontal");
 				bool oneAboveOneBelow = rigidbody.velocity.x > 0 && 0 > directionUserWantsToMove;
 				bool oneBelowOneAbove = rigidbody.velocity.x < 0 && 0 < directionUserWantsToMove;
@@ -59,12 +60,16 @@ public class Runner : MonoBehaviour
 						rigidbody.AddForce (accelerationVector, ForceMode.VelocityChange);
 				}
 				
-				bool weAreTouchingWall = isTouchingWall ();
+				//VERTICAL
 				float userUpInput = Input.GetAxis ("Vertical");
 		
-				if (weAreTouchingWall && userUpInput > 0) {
-						bool deacceleratingFall = rigidbody.velocity.y < 0 && 0 < userUpInput;
-						if (Mathf.Abs (rigidbody.velocity.y) < maxSpeed || deacceleratingFall) {
+				//do we want to move. are we allowed to move?
+				if (userUpInput > 0 && isTouchingWall ()) {
+						bool deacceleratingFall = rigidbody.velocity.y < 0;
+						bool belowMaxSpeed = Mathf.Abs (rigidbody.velocity.y) < maxSpeed;
+						bool shouldMoveUpwards = belowMaxSpeed || deacceleratingFall;
+						if (shouldMoveUpwards) {
+								Debug.Log ("Adding upwards force " + Time.time);
 								Vector3 jumpVector = new Vector3 (0, userUpInput * acceleration, 0);
 								rigidbody.AddForce (jumpVector, ForceMode.VelocityChange);
 						}
@@ -94,7 +99,7 @@ public class Runner : MonoBehaviour
 		
 		private bool touchingPlatform ()
 		{
-				Debug.Log ("coll count: " + collidingGameObjects.Count);
+				//Debug.Log ("coll count: " + collidingGameObjects.Count);
 				return collidingGameObjects.Count > 0;
 		}
 	
