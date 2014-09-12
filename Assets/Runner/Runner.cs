@@ -35,33 +35,39 @@ public class Runner : MonoBehaviour
 		
 		void OnCollisionEnter (Collision collision)
 		{
-		
-				Vector3 collisionpoint = collision.contacts [0].point;
-				Vector3 runnerPoint = transform.position;
-				Vector3 direction = runnerPoint - collisionpoint;
-				bool isFloor = Mathf.Abs (direction.y) >= 0.9;
-				Debug.Log ("direction.y: " + direction.y);
-				Debug.Log ("OCE: direction for aCollision is:: " + direction + " WHICH IS FLOOR??? " + isFloor);
-		
-		
 				collidingGameObjects.Add (collision.gameObject);
-				Debug.Log ("collision enter: " + collision);
+//				Debug.Log ("collision enter: " + collision);
 		}
 	
 		void OnCollisionExit (Collision collision)
 		{
 				collidingGameObjects.Remove (collision.gameObject);
-				Debug.Log ("collision exit: " + collision);
+				//				Debug.Log ("collision exit: " + collision);
 		}
 		
-		public bool isTouchingPlatform ()
+		public bool isTouchingFloor ()
 		{
 				//Debug.Log ("coll count: " + collidingGameObjects.Count);
-				return collidingGameObjects.Count > 0;
+				bool isSomeFloor = false;
+				foreach (GameObject collidingObject in collidingGameObjects) {
+						Vector3 collisionpoint = collidingObject.transform.position;
+						Vector3 runnerPoint = transform.position;
+						Vector3 direction = runnerPoint - collisionpoint;
+						bool isFloor = Mathf.Abs (direction.y) >= 0.9;
+						if (isFloor) {
+								isSomeFloor = true;
+								break;
+						}
+				}
+				return isSomeFloor;
 		}
 	
 		public bool isTouchingWall ()
 		{
+				//THIS IS WRONG
+				// will probably go for the center, not for the point where it touched. Large
+				//objects can fool it.
+		
 				//loop through all collisions
 				//check if any of the objects have a 90degree diff towards player
 				bool isSomeWall = false;
